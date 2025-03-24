@@ -11,10 +11,13 @@ runs:
       shell: bash
       run: |
         payload=$(jq -n --arg originator "${{ inputs.originator-service }}" '{originator: $originator}')
-        response=$(curl -s -X POST -H "Content-Type: application/json" -d "$payload" "https://test-engine-backend-dev.apps.mega.cariad
-        .cloud/e2e/run")
-        echo "$response"
-        FAILED=$(echo "$response" | jq '[.scenarios[].result] | index("failed")')
+        run_start=$(curl -s -X POST -H "Content-Type: application/json" -d "$payload" "https://test-engine-backend-dev.apps.mega.cariad.cloud/e2e/run")
+        echo "$run_start"
+        run_id=$(echo "$run_start" | jq -r '.id')
+        echo "Run ID: $run_id"
+        sleep 300
+        test_result=$(curl -s "https://test-engine-backend-dev.apps.mega.cariad.cloud/testresults/$run_id")
+        FAILED=$(echo "$test_result" | jq '[.scenarios[].result] | index("FAILED")')
         if [ "$FAILED" != "null" ]; then
           echo "At least one scenario failed!"
           exit 1
