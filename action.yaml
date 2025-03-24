@@ -21,7 +21,7 @@ runs:
         done
         test_result=$(curl -s "https://test-engine-backend-dev.apps.mega.cariad.cloud/testresults/$run_id")
         echo "$test_result"
-        FAILED=$(echo "$test_result" | jq '[.scenarios[].result] | index("FAILED")')
+        FAILED=$(echo "$test_result" | jq '[.scenarios[].result] | index("FAILURE")')
         if [ "$FAILED" != "null" ]; then
           echo "At least one scenario failed!"
           exit 1
