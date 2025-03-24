@@ -14,12 +14,7 @@ runs:
         response=$(curl -s -X POST -H "Content-Type: application/json" -d "$payload" "https://test-engine-backend-dev.apps.mega.cariad
         .cloud/e2e/run")
         echo "$response"
-        echo "response=$response" >> $GITHUB_ENV
-    - name: Check if any scenario failed
-      shell: bash
-      run: |
-        FAILED=$(echo "${{ env.response }}" | jq '[.scenarios[].result] | index("failed")')
-
+        FAILED=$(echo "$response" | jq '[.scenarios[].result] | index("failed")')
         if [ "$FAILED" != "null" ]; then
           echo "At least one scenario failed!"
           exit 1
