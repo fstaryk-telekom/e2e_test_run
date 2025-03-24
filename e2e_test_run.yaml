@@ -1,0 +1,29 @@
+name: "E2E Test Trigger Action"
+description: "Triggers E2E tests using the provided originator service."
+inputs:
+  originator-service:
+    description: "The originator service name (e.g., T-Roc)"
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: "Trigger E2E Tests"
+      shell: bash
+      run: |
+        payload=$(jq -n --arg originator "${{ inputs.originator-service }}" '{originator: $originator}')
+        response=$(curl -s -X POST -H "Content-Type: application/json" -d "$payload" "https://test-engine-backend-dev.apps.mega.cariad
+        .cloud/e2e/run")
+        echo "$response"
+        echo "response=$response" >> $GITHUB_ENV
+    - name: Check if any scenario failed
+      shell: bash
+      run: |
+        FAILED=$(echo "${{ env.response }}" | jq '[.scenarios[].result] | index("failed")')
+
+        if [ "$FAILED" != "null" ]; then
+          echo "At least one scenario failed!"
+          exit 1
+        else
+          echo "All scenarios passed!"
+        fi
+
